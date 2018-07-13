@@ -1,7 +1,9 @@
 pragma solidity ^0.4.24;
-contract Stead
-{
-    
+contract Check{
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4);    
+}
+
+contract Stead{
     struct Section{
         uint scale;
         string place;
@@ -10,7 +12,6 @@ contract Stead
         bool withHouse;
         string cadastralNumber;
     } 
-    
     
     address supplier;
     Section[] sections;
@@ -34,6 +35,25 @@ contract Stead
         require(sections[_tokenId].owner==msg.sender);
         sections[_tokenId].owner=_to;
         emit Transfer(msg.sender, _to, _tokenId);
+    }
+    
+    event SafeTransferFrom (address _from, address _to, uint _tokenId);
+
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable{
+        require(msg.sender==_from);
+        require(sections[_tokenId].owner==msg.sender);
+        if (isContract(_to)){
+            Check check = Check(_to);
+            require(check.onERC721Received(_to, _from, _tokenId, "")==bytes4(keccak256("onERC721Received(address,address,uint256,bytes)")));
+        }
+        sections[_tokenId].owner=_to;
+        emit SafeTransferFrom(_from, _to, _tokenId);
+    }
+    
+    function isContract(address addr) returns (bool) {
+         uint size;
+         assembly { size := extcodesize(addr) }
+         return size > 0;
     }
     
     function buildHouse(uint _tokenId) public{

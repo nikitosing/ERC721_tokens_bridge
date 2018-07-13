@@ -4,6 +4,12 @@ contract Check{
 }
 
 contract Stead{
+    event OnERC721Received();
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4){
+        emit OnERC721Received();
+        return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    }    
+    
     struct Section{
         uint scale;
         string place;

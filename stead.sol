@@ -19,14 +19,14 @@ contract Stead{
         bool withHouse;
         string cadastralNumber;
     } 
-    mapping (address => uint[]) public indexTokenOfOwner;
     
+    mapping (address => uint[]) public indexTokenOfOwner;
+    mapping (address=>uint) countOfOwner;
     
     address supplier;
     Section[] sections;
-    //uint[] countOfOwner;
-    mapping (address=>uint) countOfOwner;
     string total_info = "";
+    
     constructor() public{
         supplier = msg.sender;
     }
@@ -36,7 +36,7 @@ contract Stead{
     function firstRegSection(uint _scale, string _location, bool _withHouse, string _cadastralNumber) public{
         require(supplier==msg.sender);
         sections.push(Section(_scale, _location, supplier, sections.length, _withHouse, _cadastralNumber));
-       countOfOwner[supplier]++;
+        countOfOwner[supplier]++;
 //        indexTokenOfOwner[supplier].push((sections.length-1));//need change
         emit FirstRegSection ((sections.length-1), _scale, _location,  _withHouse,  _cadastralNumber);
     }
@@ -112,8 +112,8 @@ contract Stead{
     
     function bytesToUint(bytes b) public returns (uint256){
         uint256 number;
-        for(uint i=0;i<b.length;i++){
-            number = number + uint(b[i])*(2**(8*(b.length-(i+1))));
+        for(uint i = 0; i<b.length; i++){
+            number = number + uint(b[i]) * (2 ** (8 * (b.length - (i+1))));
         }
         return number;
     }
@@ -126,7 +126,6 @@ contract Stead{
         countOfOwner[msg.sender]--;
         countOfOwner[_to]++;
         //delete indexTokenOfOwner[supplier].[]
-        
        // push((sections.length-1));
         emit Transfer(msg.sender, _to, _tokenId);
     }

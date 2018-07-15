@@ -25,11 +25,12 @@ contract HomeToken{
     mapping (address => uint) countOfOwner;
     mapping (address => bool) permissionToRecover;
     mapping (address => bool) permissionToDemolish;
+    mapping (uint => Section) sections;
     
     address supplier;
-    Section[] sections;
     string total_info = "";
     bool canCreate = false;
+    uint totalCount = 0;
     
     constructor(bool _can) public{
         supplier = msg.sender;
@@ -41,10 +42,11 @@ contract HomeToken{
     function firstRegSection(uint _scale, string _location, bool _withHouse, string _cadastralNumber) public{
         require(supplier==msg.sender);
         require(canCreate);
-        sections.push(Section(_scale, _location, supplier, sections.length, _withHouse, _cadastralNumber));
+        sections[totalCount] = (Section(_scale, _location, supplier, totalCount, _withHouse, _cadastralNumber));
+        totalCount++;
         countOfOwner[supplier]++;
 //        indexTokenOfOwner[supplier].push((sections.length-1));//need change
-        emit FirstRegSection ((sections.length-1), _scale, _location,  _withHouse,  _cadastralNumber);
+        emit FirstRegSection ((totalCount-1), _scale, _location,  _withHouse,  _cadastralNumber);
     }
     
     function ownerOf(uint256 _tokenId) external view returns (address){

@@ -1,10 +1,11 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
-contract Check{
+
+contract Bridge{
     function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4);    
 }
 
-contract Stead{
+contract HomeToken{
     event OnERC721Received();
     function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4){
         emit OnERC721Received();
@@ -21,20 +22,25 @@ contract Stead{
     } 
     
     mapping (address => uint[]) public indexTokenOfOwner;
-    mapping (address=>uint) countOfOwner;
+    mapping (address => uint) countOfOwner;
+    mapping (address => bool) permissionToRecover;
+    mapping (address => bool) permissionToDemolish;
     
     address supplier;
     Section[] sections;
     string total_info = "";
+    bool canCreate = false;
     
-    constructor() public{
+    constructor(bool _can) public{
         supplier = msg.sender;
+        canCreate = _can;
     }
     
     event FirstRegSection (uint _tokenId, uint _scale, string _location, bool _withHouse, string _cadastralNumber);
     
     function firstRegSection(uint _scale, string _location, bool _withHouse, string _cadastralNumber) public{
         require(supplier==msg.sender);
+        require(canCreate);
         sections.push(Section(_scale, _location, supplier, sections.length, _withHouse, _cadastralNumber));
         countOfOwner[supplier]++;
 //        indexTokenOfOwner[supplier].push((sections.length-1));//need change
@@ -53,6 +59,14 @@ contract Stead{
         return ;//need change
     }
     
+    function setPermissionToRecover(address _addr){
+        permissionToRecover[_addr] = true;
+    }
+    
+     function setPermissionToDemolish(address _addr){
+        permissionToDemolish[_addr] = true;
+    }
+    
     function getSerializedData(uint _tokenId) returns (bytes[]){
         bytes[] memory data = new bytes [](6);
         data[0] = (abi.encodePacked(sections[_tokenId].scale));
@@ -68,8 +82,9 @@ contract Stead{
         return data;
     }
     
-    function recovery(uint _tokenId) returns(Section){
-        bytes[] memory _data = getSerializedData(_tokenId);
+    function recoveryToken(uint _tokenId, bytes[] _tokenData){
+        require(permissionToRecover[msg.sender]);
+        bytes[] memory _data = _tokenData;
         sections[_tokenId].scale = bytesToUint(_data[0]);
         sections[_tokenId].place = string(_data[1]);
         sections[_tokenId].owner = bytesToAddress(_data[2]);
@@ -80,7 +95,7 @@ contract Stead{
             sections[_tokenId].withHouse = false;    
         }
         sections[_tokenId].cadastralNumber = string(_data[5]);
-        return (sections[_tokenId]);
+        //return (sections[_tokenId]);
     }
 
     function bytesToAddress(bytes _address) constant returns(address){
@@ -136,8 +151,8 @@ contract Stead{
         require(msg.sender==_from);
         require(sections[_tokenId].owner==msg.sender);
         if (isContract(_to)){
-            Check check = Check(_to);
-            require(check.onERC721Received(_to, _from, _tokenId, "")==bytes4(keccak256("onERC721Received(address,address,uint256,bytes)")));
+            Bridge bridge = Bridge(_to);
+            require(bridge.onERC721Received(_to, _from, _tokenId, "")==bytes4(keccak256("onERC721Received(address,address,uint256,bytes)")));
         }
         sections[_tokenId].owner=_to;
         countOfOwner[_from]--;
@@ -161,6 +176,11 @@ contract Stead{
         require(msg.sender==sections[_tokenId].owner);
         require(sections[_tokenId].withHouse);
         sections[_tokenId].withHouse = false;
+    }
+    
+    function demolishToken(uint _tokenId){
+        require(permissionToDemolish[msg.sender]);
+        delete sections[_tokenId];
     }
     
 }

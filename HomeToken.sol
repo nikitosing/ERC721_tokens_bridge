@@ -84,6 +84,8 @@ contract HomeToken{
         return data;
     }
     
+    event tokenReceived(uint _tokeId);
+    
     function recoveryToken(uint _tokenId, bytes[] _tokenData){
         require(permissionToRecover[msg.sender]);
         bytes[] memory _data = _tokenData;
@@ -97,6 +99,7 @@ contract HomeToken{
             sections[_tokenId].withHouse = false;    
         }
         sections[_tokenId].cadastralNumber = string(_data[5]);
+        emit tokenReceived(_tokenId);
         //return (sections[_tokenId]);
     }
 
@@ -180,9 +183,12 @@ contract HomeToken{
         sections[_tokenId].withHouse = false;
     }
     
+    event tokenBurnt(uint _tokenId);
+    
     function demolishToken(uint _tokenId){
         require(permissionToDemolish[msg.sender]);
         delete sections[_tokenId];
+        emit tokenBurnt(_tokenId);
     }
     
 }

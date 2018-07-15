@@ -20,7 +20,7 @@ contract HomeBridge{
     event userRequestForSignature(uint _tokenId, bytes[] _tokenData);
     
     function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4){
-        emit userRequestForSignature(_tokenId, homeToken.getSerializedData(_tokenId));
+        emit userRequestForSignature(_from, _tokenId, homeToken.getSerializedData(_tokenId));
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }   
     
@@ -29,5 +29,7 @@ contract HomeBridge{
     function transferApproved(address _owner, uint _tokenId, bytes[] _tokenData){
         homeToken.recoveryToken(_tokenId, _tokenData);
         homeToken.transfer(_tokenId, _owner);
-        emit transferCompleted(_tokenId);    }
+        emit transferCompleted(_tokenId);    
+    }
+    
 }

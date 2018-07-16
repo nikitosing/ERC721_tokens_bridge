@@ -5,7 +5,7 @@ contract Bridge{
     function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4);    
 }
 
-contract ForeignToken{
+contract SectionsToken{
     event OnERC721Received();
     function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4){
         emit OnERC721Received();
